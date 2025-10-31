@@ -3,6 +3,7 @@ import cors from 'cors';
 import { pool } from './db';
 import transactionRoutes from './routes/transactions';
 import insightRoutes from './routes/insights';
+import alertRoutes from './routes/alerts';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use('/api', transactionRoutes);
 app.use('/api', insightRoutes);
+app.use('/api', alertRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {

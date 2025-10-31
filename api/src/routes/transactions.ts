@@ -1,7 +1,64 @@
 import { Router } from 'express';
 import { pool } from '../db';
+import { randomUUID } from 'crypto';
 
 const router = Router();
+
+router.post('/ingest/transactions', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { transactions } = req.body;
+
+    if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
+      return res.status(400).json({ error: 'No transactions provided' });
+    }
+
+    const requestId = randomUUID();
+
+    await client.query('BEGIN');
+
+    for (const txn of transactions) {
+      const {
+        customer_id,
+        card_id,
+        merchant,
+        amount_cents,
+        currency = 'INR',
+        mcc,
+        device_id,
+        country = 'IN',
+        city,
+        ts
+      } = txn;
+
+      await client.query(
+        `INSERT INTO transactions 
+          (customer_id, card_id, merchant, amount_cents, currency, mcc, device_id, country, city, ts)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [customer_id, card_id, merchant, amount_cents, currency, mcc, device_id, country, city, ts]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      accepted: true,
+      count: transactions.length,
+      requestId
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error ingesting transactions:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : String(error)
+    });
+  } finally {
+    client.release();
+  }
+});
+
+
 
 // GET /api/customer/:id/transactions
 // Query params: limit, offset, from, to
