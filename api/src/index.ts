@@ -4,6 +4,8 @@ import { pool } from './db';
 import transactionRoutes from './routes/transactions';
 import insightRoutes from './routes/insights';
 import alertRoutes from './routes/alerts';
+import triageRoutes from './routes/triage';
+import actionRoutes from './routes/actions';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -14,6 +16,8 @@ app.use(express.json());
 app.use('/api', transactionRoutes);
 app.use('/api', insightRoutes);
 app.use('/api', alertRoutes);
+app.use('/api', triageRoutes);
+app.use('/api/action', actionRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
