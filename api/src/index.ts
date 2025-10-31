@@ -6,6 +6,7 @@ import insightRoutes from './routes/insights';
 import alertRoutes from './routes/alerts';
 import triageRoutes from './routes/triage';
 import actionRoutes from './routes/actions';
+import searchRoutes from './routes/search';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -18,6 +19,7 @@ app.use('/api', insightRoutes);
 app.use('/api', alertRoutes);
 app.use('/api', triageRoutes);
 app.use('/api/action', actionRoutes);
+app.use('/api/kb', searchRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {

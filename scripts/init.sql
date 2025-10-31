@@ -61,10 +61,28 @@ CREATE TABLE case_events (
   ts TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE kb_docs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  anchor TEXT UNIQUE,
+  content_text TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 INSERT INTO customers (id, name, email, phone) VALUES
 ('550e8400-e29b-41d4-a716-446655440000', 'Rajesh Kumar', 'rajesh.k@example.com', '+919876543210');
 
 INSERT INTO cards (customer_id, last4, network) VALUES
 ('550e8400-e29b-41d4-a716-446655440000', '4532', 'VISA');
+
+INSERT INTO kb_docs (title, anchor, content_text) VALUES
+('Dispute Handling Policy', 'policy-dispute-handling',
+ 'Disputes must be opened only after confirming with the customer.'),
+('High-Risk MCC Codes', 'kb-high-risk-mcc',
+ 'MCC codes 4829, 6012, and 7995 are considered high risk.'),
+('Triage Workflow Overview', 'kb-triage-overview',
+ 'The triage system helps analysts investigate suspicious transactions.'),
+('Transaction Limits', 'kb-txn-limits',
+ 'Customers with KYC level BASIC are limited to $2000 per day.');
 
 SELECT 'Database ready!' AS status;
