@@ -15,7 +15,8 @@ router.post('/triage', async (req, res) => {
 
     // Check if alert exists and is OPEN
     const alertCheck = await client.query(
-      `SELECT id, status FROM alerts WHERE id = $1`,
+      `SELECT id, status, risk_score, customer_id, suspect_txn_id
+       FROM alerts WHERE id = $1`,
       [alertId]
     );
 
@@ -23,13 +24,14 @@ router.post('/triage', async (req, res) => {
       return res.status(404).json({ error: 'Alert not found' });
     }
 
-    if (alertCheck.rows[0].status !== 'OPEN') {
+    const alert = alertCheck.rows[0];
+    if (alert.status !== 'OPEN') {
       return res.status(400).json({ error: 'Alert already processed' });
     }
 
     const runId = randomUUID();
 
-    // Create a triage run record (if you have a table for it)
+    // Create triage run
     await client.query(
       `INSERT INTO triage_runs (id, alert_id, status, started_at)
        VALUES ($1, $2, 'STARTED', NOW())`,
@@ -50,6 +52,44 @@ router.post('/triage', async (req, res) => {
   } finally {
     client.release();
   }
+});
+
+// GET /api/triage/:runId/stream → SSE endpoint
+router.get('/triage/:runId/stream', async (req, res) => {
+  const { runId } = req.params;
+
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const steps = [
+    'Fetching transaction history…',
+    'Checking customer profile…',
+    'Analyzing device and location data…',
+    'Comparing with previous fraud patterns…',
+    'Triage completed ✅'
+  ];
+
+  let stepIndex = 0;
+
+  const interval = setInterval(async () => {
+    if (stepIndex < steps.length) {
+      res.write(`data: ${JSON.stringify({ message: steps[stepIndex] })}\n\n`);
+      stepIndex++;
+    } else {
+      clearInterval(interval);
+
+      // Mark triage as completed
+      await pool.query(
+        `UPDATE triage_runs SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1`,
+        [runId]
+      );
+
+      res.write(`data: ${JSON.stringify({ status: 'COMPLETED' })}\n\n`);
+      res.end();
+    }
+  }, 1500);
 });
 
 export default router;
