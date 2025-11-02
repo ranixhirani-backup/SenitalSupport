@@ -92,4 +92,42 @@ router.get('/triage/:runId/stream', async (req, res) => {
   }, 1500);
 });
 
+// GET /api/triage/:runId/details
+router.get('/triage/:runId/details', async (req, res) => {
+  try {
+    const { runId } = req.params;
+
+    const query = `
+      SELECT 
+        tr.id AS run_id,
+        tr.status,
+        tr.started_at,
+        a.id AS alert_id,
+        a.risk_score,
+        a.status AS alert_status,
+        a.created_at AS alert_created_at,
+        c.id AS customer_id,
+        c.name AS customer_name,
+        t.merchant,
+        t.amount_cents,
+        t.ts AS transaction_ts
+      FROM triage_runs tr
+      JOIN alerts a ON tr.alert_id = a.id
+      JOIN customers c ON a.customer_id = c.id
+      LEFT JOIN transactions t ON a.suspect_txn_id = t.id
+      WHERE tr.id = $1
+    `;
+
+    const result = await pool.query(query, [runId]);
+    if (result.rowCount === 0)
+      return res.status(404).json({ error: 'Triage run not found' });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching triage details:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 export default router;
