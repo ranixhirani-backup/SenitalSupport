@@ -8,7 +8,7 @@ import triageRoutes from './routes/triage';
 import actionRoutes from './routes/actions';
 import searchRoutes from './routes/search';
 import freezeCardRoutes from './routes/freeze-card';
-
+import dashboardRoutes from './routes/dashboard';
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -22,7 +22,7 @@ app.use('/api', triageRoutes);
 app.use('/api/action', actionRoutes);
 app.use('/api/kb', searchRoutes);
 app.use('/api/action', freezeCardRoutes);
-
+app.use('/api', dashboardRoutes);
 // Health check
 app.get('/health', async (req, res) => {
   try {
