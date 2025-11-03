@@ -93,9 +93,21 @@ router.get('/triage/:runId/stream', async (req, res) => {
 });
 
 // GET /api/triage/:runId/details
+// ...existing code...
 router.get('/triage/:runId/details', async (req, res) => {
+  const { runId } = req.params;
+  const client = await pool.connect();
+  let timer: NodeJS.Timeout | null = null;
+  let aborted = false;
+
+  // Detect client disconnects (Abort on client close)
+  req.on('close', () => {
+    aborted = true;
+    if (timer) clearTimeout(timer);
+  });
+
   try {
-    const { runId } = req.params;
+    console.log(`[INFO] Fetching triage details for runId: ${runId}`);
 
     const query = `
       SELECT 
@@ -112,20 +124,45 @@ router.get('/triage/:runId/details', async (req, res) => {
         t.amount_cents,
         t.ts AS transaction_ts
       FROM triage_runs tr
-      JOIN alerts a ON tr.alert_id = a.id
-      JOIN customers c ON a.customer_id = c.id
+      LEFT JOIN alerts a ON tr.alert_id = a.id
+      LEFT JOIN customers c ON a.customer_id = c.id
       LEFT JOIN transactions t ON a.suspect_txn_id = t.id
       WHERE tr.id = $1
     `;
 
-    const result = await pool.query(query, [runId]);
-    if (result.rowCount === 0)
-      return res.status(404).json({ error: 'Triage run not found' });
+    // enforce a DB query timeout (5s)
+    const dbQueryPromise = client.query(query, [runId]);
+    const timeoutPromise = new Promise((_res, reject) => {
+      timer = setTimeout(() => reject(new Error('DB query timeout')), 5000);
+    });
 
-    res.json(result.rows[0]);
+    const result = await Promise.race([dbQueryPromise, timeoutPromise]) as any;
+    if (timer) { clearTimeout(timer); timer = null; }
+
+    if (aborted) {
+      console.warn(`[WARN] Client disconnected while fetching triage details for ${runId}`);
+      return; // don't try to write to closed socket
+    }
+
+    if (!result || result.rowCount === 0) {
+      console.warn(`[WARN] No triage run found for runId: ${runId}`);
+      return res.status(404).json({ error: 'Triage run not found' });
+    }
+
+    console.log(`[SUCCESS] Returning details for runId: ${runId}`);
+    return res.json(result.rows[0]);
   } catch (err) {
-    console.error('Error fetching triage details:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error(`[ERROR] Failed fetching triage details for ${runId}`, err);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+    // if headers already sent, just end
+    try { res.end(); } catch (_) {}
+  } finally {
+    client.release();
   }
 });
 
