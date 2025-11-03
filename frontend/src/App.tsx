@@ -12,7 +12,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/customer/:id" element={<CustomerDetails />} />
         <Route path="/alerts" element={<Alerts />} />
-        <Route path="/triage/:alertId" element={<TriageView />} />
+        {/* <Route path="/triage/:alertId" element={<TriageView />} /> */}
+        <Route path="/triage/:runId" element={<TriageView />} />
         {/* <Route path="/alerts" element={<Alerts />} />
         <Route path="/customer/:id" element={<Customer />} />
         <Route path="/evals" element={<Evals />} /> */}
