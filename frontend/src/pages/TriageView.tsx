@@ -24,7 +24,7 @@ export default function TriageView() {
     if (!runId) return;
 
     // Fetch static triage details
-    fetch(`http://localhost:3001/api/triage/${runId}`)
+    fetch(`http://localhost:3001/api/triage/${runId}/details`)
       .then((res) => (res.ok ? res.json() : null))
       .then(setTriage)
       .catch((err) => console.error("Failed to fetch triage details:", err));

@@ -69,6 +69,16 @@ CREATE TABLE kb_docs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE triage_runs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  alert_id UUID REFERENCES alerts(id),
+  status VARCHAR(20) DEFAULT 'RUNNING',
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  summary JSONB
+);
+
+
 INSERT INTO customers (id, name, email, phone) VALUES
 ('550e8400-e29b-41d4-a716-446655440000', 'Rajesh Kumar', 'rajesh.k@example.com', '+919876543210');
 
