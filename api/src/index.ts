@@ -81,6 +81,20 @@ app.get('/api/customer/:id/cards', async (req, res) => {
   }
 });
 
+app.get('/api/customers', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, phone, created_at FROM customers ORDER BY created_at DESC'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`🚀 API running on http://localhost:${port}`);
   console.log(`📊 Health: http://localhost:${port}/health`);
