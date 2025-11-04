@@ -37,7 +37,7 @@ services:
         condition: service_healthy
     volumes:
       - ./api/src:/app/src
-    command: sh -c "node /app/seed.js && npm run dev"
+    command: sh -c "node /app/seed.js || echo 'Seed failed!!!!!!!!!!!!!!!!!!!!!!!!!, continuing...' && npm run dev"
 
   frontend:
     build:
