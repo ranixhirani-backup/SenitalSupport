@@ -1,4 +1,5 @@
 import { useFetch } from '../hooks/useFetch';
+import { useNavigate } from 'react-router-dom';
 
 type Summary = {
   alertsInQueue: number;
@@ -16,6 +17,7 @@ type Customer = {
 };
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { data: summary, loading: summaryLoading, error: summaryError } = useFetch<Summary>(
     `http://localhost:3001/api/dashboard/summary`
   );
@@ -28,21 +30,44 @@ export default function Dashboard() {
   if (summaryError || custError)
     return <p style={{ textAlign: 'center', marginTop: '2rem', color: '#ff6b6b' }}>Error loading data.</p>;
 
+  const summaryCards = [
+    {
+      label: 'Alerts in Queue',
+      value: summary?.alertsInQueue ?? 0,
+      onClick: () => navigate('/Alerts'), // ✅ navigate to Alerts route
+    },
+    { label: 'Disputes Opened', value: summary?.disputesOpened ?? 0 },
+    {
+      label: 'Avg Triage Latency',
+      value: summary?.avgTriageLatencyMs !== null ? `${summary?.avgTriageLatencyMs} ms` : '—',
+    },
+  ];
+
   return (
     <div
       style={{
-        padding: '2rem',
         fontFamily: 'Inter, sans-serif',
         color: '#f5f5f5',
         minHeight: '100vh',
+        background: '#0d0d0d',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: '1rem',
+        paddingBottom: '4rem',
       }}
     >
       <div style={{ width: '100%', maxWidth: '1200px' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: 600, marginBottom: '1.5rem', color: '#fff', textAlign: 'center' }}>
+        <h1
+          style={{
+            fontSize: '1.8rem',
+            fontWeight: 600,
+            marginBottom: '2rem',
+            color: '#fff',
+            textAlign: 'center',
+          }}
+        >
           Dashboard
         </h1>
 
@@ -57,16 +82,10 @@ export default function Dashboard() {
               flexWrap: 'wrap',
             }}
           >
-            {[
-              { label: 'Alerts in Queue', value: summary.alertsInQueue },
-              { label: 'Disputes Opened', value: summary.disputesOpened },
-              {
-                label: 'Avg Triage Latency',
-                value: summary.avgTriageLatencyMs !== null ? `${summary.avgTriageLatencyMs} ms` : '—',
-              },
-            ].map((item, idx) => (
+            {summaryCards.map((item, idx) => (
               <div
                 key={idx}
+                onClick={item.onClick}
                 style={{
                   width: '180px',
                   background: '#1b1b1b',
@@ -74,6 +93,14 @@ export default function Dashboard() {
                   borderRadius: '10px',
                   padding: '1rem',
                   textAlign: 'center',
+                  cursor: item.onClick ? 'pointer' : 'default', // 🟢 clickable only for Alerts
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (item.onClick) e.currentTarget.style.background = '#222';
+                }}
+                onMouseLeave={(e) => {
+                  if (item.onClick) e.currentTarget.style.background = '#1b1b1b';
                 }}
               >
                 <h3 style={{ fontSize: '0.9rem', fontWeight: 500, color: '#aaa', marginBottom: '0.4rem' }}>
@@ -87,9 +114,7 @@ export default function Dashboard() {
 
         {/* Customers section */}
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 600, marginBottom: '1rem', color: '#fff' }}>
-            Customers
-          </h2>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 600, marginBottom: '1rem', color: '#fff' }}>Customers</h2>
           {customers && customers.length > 0 ? (
             <div style={{ overflowX: 'auto', width: '100%', maxWidth: '900px' }}>
               <table
@@ -122,17 +147,22 @@ export default function Dashboard() {
                   {customers.map((c, i) => (
                     <tr
                       key={c.id}
+                      onClick={() => navigate(`/customer/${c.id}`)}
                       style={{
                         borderBottom: '1px solid #333',
                         background: i % 2 === 0 ? '#111' : '#161616',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s ease, transform 0.1s ease',
                       }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#1e1e1e')}
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = i % 2 === 0 ? '#111' : '#161616')
+                      }
                     >
-                      <td style={{ padding: '0.75rem' }}>{c.name}</td>
+                      <td style={{ padding: '0.75rem', color: '#e6f1fdff', textDecoration: 'underline' }}>{c.name}</td>
                       <td style={{ padding: '0.75rem' }}>{c.email}</td>
                       <td style={{ padding: '0.75rem' }}>{c.phone || '—'}</td>
-                      <td style={{ padding: '0.75rem' }}>
-                        {new Date(c.created_at).toLocaleDateString()}
-                      </td>
+                      <td style={{ padding: '0.75rem' }}>{new Date(c.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
