@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { pool } from './db';
+import dotenv from 'dotenv';
 import transactionRoutes from './routes/transactions';
 import insightRoutes from './routes/insights';
 import alertRoutes from './routes/alerts';
@@ -15,6 +16,7 @@ const port = process.env.PORT || 3001;
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
+dotenv.config();
 app.use('/api', transactionRoutes);
 app.use('/api', insightRoutes);
 app.use('/api', alertRoutes);

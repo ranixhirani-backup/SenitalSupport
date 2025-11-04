@@ -54,7 +54,7 @@ export default function Alerts() {
 
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
         <thead>
-          <tr style={{ background: "#f3f3f3", textAlign: "left" }}>
+          <tr style={{ background: "#f3f3f3", textAlign: "left", color: "#333" }}>
             <th style={{ padding: "8px" }}>Risk</th>
             <th style={{ padding: "8px" }}>Customer</th>
             <th style={{ padding: "8px" }}>Merchant</th>
@@ -66,7 +66,7 @@ export default function Alerts() {
         <tbody>
           {alerts.map((alert) => (
             <tr key={alert.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ padding: "8px", fontWeight: 600, color: alert.riskScore > 70 ? "red" : "#333" }}>
+              <td style={{ padding: "8px", fontWeight: 600, color: alert.riskScore > 70 ? "red" : "#eee" }}>
                 {alert.riskScore}
               </td>
               <td style={{ padding: "8px" }}>{alert.customer.name}</td>
