@@ -25,7 +25,7 @@ router.post('/freeze-card/request-otp', async (req, res) => {
     otpStore[card_id] = { otp, expiresAt };
 
     return res.json({
-      otp, // For internal use only — sent directly to frontend
+      otp, // 🔥 For internal use only — sent directly to frontend
       expiresIn: 300,
       message: 'OTP generated successfully.',
     });
@@ -69,7 +69,7 @@ router.post('/freeze-card/confirm', async (req, res) => {
 
     return res.json({
       status: 'FROZEN',
-      message: `Card has been frozen.`,
+      message: `Card has been frozen successfully.`,
     });
   } catch (err) {
     console.error('Error freezing card:', err);

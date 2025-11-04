@@ -4,16 +4,17 @@ import { useParams, useNavigate } from "react-router-dom";
 export default function FreezeCard() {
   const { cardId } = useParams();
   const navigate = useNavigate();
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(Array(6).fill(""));
   const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
   const [status, setStatus] = useState("");
-  const hasRequestedOtp = useRef(false); // Add this ref
+  const hasRequestedOtp = useRef(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Request OTP once
   useEffect(() => {
-    if (!cardId || hasRequestedOtp.current) return; // Check ref
-    hasRequestedOtp.current = true; // Mark as requested
+    if (!cardId || hasRequestedOtp.current) return;
+    hasRequestedOtp.current = true;
 
-    // Request OTP from backend
     fetch("http://localhost:3001/api/action/freeze-card/request-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -32,7 +33,13 @@ export default function FreezeCard() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!cardId || !otp) return;
+    if (!cardId) return;
+
+    const otpValue = otp.join("");
+    if (otpValue.length !== 6) {
+      setStatus("❌ Please enter all 6 digits");
+      return;
+    }
 
     try {
       const res = await fetch(
@@ -40,7 +47,7 @@ export default function FreezeCard() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ card_id: cardId, otp }),
+          body: JSON.stringify({ card_id: cardId, otp: otpValue }),
         }
       );
 
@@ -57,6 +64,24 @@ export default function FreezeCard() {
     }
   }
 
+  // Handle OTP input navigation
+  const handleChange = (value: string, index: number) => {
+    const sanitized = value.replace(/\D/, ""); // only digits
+    const newOtp = [...otp];
+    newOtp[index] = sanitized;
+    setOtp(newOtp);
+
+    if (sanitized && index < otp.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
   return (
     <div
       style={{
@@ -69,19 +94,18 @@ export default function FreezeCard() {
       }}
     >
       <h2>Freeze Card Verification</h2>
+      <p>Card ID: {cardId}</p>
 
       <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
         <div style={{ display: "flex", gap: "10px" }}>
-          {Array.from({ length: 6 }).map((_, i) => (
+          {otp.map((digit, i) => (
             <input
               key={i}
+              ref={(el) => { inputRefs.current[i] = el; }}
               maxLength={1}
-              value={otp[i] || ""}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/, "");
-                const updated = otp.substring(0, i) + val + otp.substring(i + 1);
-                setOtp(updated);
-              }}
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, i)}
+              onKeyDown={(e) => handleKeyDown(e, i)}
               style={{
                 width: "40px",
                 height: "40px",
