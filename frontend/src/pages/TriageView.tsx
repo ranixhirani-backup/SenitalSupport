@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./TriageView.css";
+import { useNavigate } from "react-router-dom";
 
 interface TriageDetails {
   run_id?: string;
@@ -21,6 +22,7 @@ interface SSEEvent {
 export default function TriageView() {
   const params = useParams();
   const runId = params.runId || params.id;
+  const navigate = useNavigate();
 
   const [triage, setTriage] = useState<TriageDetails | null>(null);
   const [events, setEvents] = useState<SSEEvent[]>([]);
@@ -174,9 +176,7 @@ export default function TriageView() {
 
               <Card title="Actions">
                 <div className="actions">
-                  <button onClick={() => handleAction("freeze")}>
-                    🔒 Freeze Card
-                  </button>
+                  <button onClick={() => navigate(`/freeze-card/${triage?.run_id}`)}>🔒 Freeze Card</button>
                   <button onClick={() => handleAction("dispute")}>
                     ⚠️ Open Dispute
                   </button>
