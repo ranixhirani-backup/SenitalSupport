@@ -4,6 +4,7 @@ import CustomerDetails from "./pages/CustomerDetails";
 import Alerts from "./pages/Alerts";
 import TriageView from "./pages/TriageView";
 import FreezeCard from "./pages/FreezeCard";
+import OpenDisputeForm from "./pages/OpenDisputeForm";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         {/* <Route path="/triage/:alertId" element={<TriageView />} /> */}
         <Route path="/triage/:runId" element={<TriageView />} />
         <Route path="/freeze-card/:cardId" element={<FreezeCard />} />
+        <Route path="/open-dispute/:txnId" element={<OpenDisputeForm />} />
         {/* <Route path="/alerts" element={<Alerts />} />
         <Route path="/customer/:id" element={<Customer />} />
         <Route path="/evals" element={<Evals />} /> */}

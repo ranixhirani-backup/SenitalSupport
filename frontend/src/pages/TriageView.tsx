@@ -177,9 +177,10 @@ export default function TriageView() {
               <Card title="Actions">
                 <div className="actions">
                   <button onClick={() => navigate(`/freeze-card/${triage?.run_id}`)}>🔒 Freeze Card</button>
-                  <button onClick={() => handleAction("dispute")}>
-                    ⚠️ Open Dispute
-                  </button>
+                  <button onClick={() => navigate(`/dispute/${triage?.run_id}`)}>
+  ⚠️ Open Dispute
+</button>
+
                   <button onClick={() => handleAction("contact")}>
                     📞 Contact Customer
                   </button>
