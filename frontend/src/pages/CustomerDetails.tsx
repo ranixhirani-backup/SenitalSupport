@@ -4,7 +4,6 @@ import TransactionTimeline from "../components/transactions/TransactionTimeline"
 import CategorySpendTable from "../components/insights/CategorySpendTable";
 import MerchantMixTable from "../components/insights/MerchantMixTable";
 import AnomaliesTable from "../components/insights/AnomaliesTable";
-import KPICards from "../components/insights/KPICards";
 
 interface Transaction {
   id: string;
@@ -46,17 +45,10 @@ export default function CustomerDetails() {
   if (transactionsError || insightsError) return <p>Error loading data.</p>;
 
   // ✅ compute KPIs safely
-  const alertsInQueue = insightsData?.anomalies?.length || 0;
-  const disputesOpened =
-    transactionsData?.items?.filter(
-      (txn: Transaction) => txn.status === "DISPUTED"
-    ).length || 0;
-
   return (
     <div style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
       <h1>Customer {id}</h1>
 
-      <KPICards alertsInQueue={alertsInQueue} disputesOpened={disputesOpened} />
 
       <section>
         <h2>Transaction Timeline</h2>
