@@ -95,6 +95,11 @@ export default function FreezeCard() {
     >
       <h2>Freeze Card Verification</h2>
       <p>Card ID: {cardId}</p>
+      {generatedOtp && (
+        <p style={{ marginTop: "8px", color: "#ccc", fontSize: "0.9rem" }}>
+          OTP (dev): {generatedOtp}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
         <div style={{ display: "flex", gap: "10px" }}>
