@@ -3,6 +3,11 @@ import cors from 'cors';
 import { pool } from './db';
 import transactionRoutes from './routes/transactions';
 import insightRoutes from './routes/insights';
+import alertRoutes from './routes/alerts';
+import triageRoutes from './routes/triage';
+import actionRoutes from './routes/actions';
+import searchRoutes from './routes/search';
+import freezeCardRoutes from './routes/freeze-card';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -12,6 +17,11 @@ app.use(express.json());
 
 app.use('/api', transactionRoutes);
 app.use('/api', insightRoutes);
+app.use('/api', alertRoutes);
+app.use('/api', triageRoutes);
+app.use('/api/action', actionRoutes);
+app.use('/api/kb', searchRoutes);
+app.use('/api/action', freezeCardRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
