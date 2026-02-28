@@ -37,6 +37,18 @@ services:
         condition: service_healthy
     volumes:
       - ./api/src:/app/src
+    command: sh -c "node /app/seed.js || echo 'Seed failed!!!!!!!!!!!!!!!!!!!!!!!!!, continuing...' && npm run dev"
+
+  frontend:
+    build:
+      context: ./frontend  # 👈 path to your React app
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"          # frontend visible at http://localhost:5173
+    depends_on:
+      - api
+    environment:
+      - VITE_API_URL=http://localhost:3001  # 👈 optional, for frontend to call backend
 
 volumes:
   postgres_data:

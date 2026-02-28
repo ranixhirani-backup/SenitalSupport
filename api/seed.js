@@ -27,7 +27,8 @@ async function seed() {
     
     console.log(`📋 Customer ID: ${customerId}`);
     
-    // Clear old data
+    // ✅ Delete order: first triage_runs → alerts → transactions
+    await pool.query('DELETE FROM triage_runs');
     await pool.query('DELETE FROM alerts');
     await pool.query('DELETE FROM transactions WHERE customer_id = $1', [customerId]);
     
@@ -80,7 +81,7 @@ async function seed() {
     
   } catch (error) {
     console.error('❌ Error:', error);
-    process.exit(1);
+    console.log('Seed failed!!!!!!!!!!!!!!!!!!!!!!!!!, continuing...');
   } finally {
     await pool.end();
   }

@@ -1,18 +1,30 @@
 import express from 'express';
 import cors from 'cors';
 import { pool } from './db';
+import dotenv from 'dotenv';
 import transactionRoutes from './routes/transactions';
 import insightRoutes from './routes/insights';
-
+import alertRoutes from './routes/alerts';
+import triageRoutes from './routes/triage';
+import actionRoutes from './routes/actions';
+import searchRoutes from './routes/search';
+import freezeCardRoutes from './routes/freeze-card';
+import dashboardRoutes from './routes/dashboard';
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
+dotenv.config();
 app.use('/api', transactionRoutes);
 app.use('/api', insightRoutes);
-
+app.use('/api', alertRoutes);
+app.use('/api', triageRoutes);
+app.use('/api/action', actionRoutes);
+app.use('/api/kb', searchRoutes);
+app.use('/api/action', freezeCardRoutes);
+app.use('/api', dashboardRoutes);
 // Health check
 app.get('/health', async (req, res) => {
   try {
@@ -63,6 +75,20 @@ app.get('/api/customer/:id/cards', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('Error:', error);
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
+app.get('/api/customers', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, phone, created_at FROM customers ORDER BY created_at DESC'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching customers:', error);
     res.status(500).json({ 
       error: error instanceof Error ? error.message : String(error)
     });
